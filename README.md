@@ -123,6 +123,24 @@ curl http://localhost:4000/health
 docker exec supabase-db psql -U postgres -c "SELECT version();"
 ```
 
+### Understanding Service Health Status
+
+**Important**: All 13 services run successfully, but some may show as "unhealthy" or have no health checks. This is normal and does not affect functionality:
+
+| Service | Expected Status | Notes |
+|---------|----------------|-------|
+| Realtime | Running (unhealthy) | Health check requires tenant auth config - service works fine |
+| REST API | Running | No health check defined - this is normal |
+| Edge Functions | Running | No health check defined - this is normal |
+| All Others | Running (healthy) | Should show as healthy |
+
+**For production use, you might want to:**
+1. Configure proper tenant auth for Realtime health checks
+2. Add custom health endpoints for REST and Edge Functions
+3. But these are optional improvements, not requirements for functionality
+
+The services work correctly regardless of health check status.
+
 ### Common Issues
 
 1. **Port Already in Use**
