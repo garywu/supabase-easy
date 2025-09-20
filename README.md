@@ -19,9 +19,9 @@ This repository contains a production-ready Supabase self-hosting setup that ach
 git clone https://github.com/yourusername/supabase-easy.git
 cd supabase-easy
 
-# Run the installer
-chmod +x install.sh
-./install.sh
+# Run the setup (downloads SQL files and installs)
+chmod +x setup.sh
+./setup.sh
 
 # That's it! Supabase is now running
 ```

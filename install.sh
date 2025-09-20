@@ -23,6 +23,7 @@ if [ ! -f .env ]; then
     fi
     
     # Add missing POSTGRES_USER
+    echo "" >> .env
     echo "POSTGRES_USER=postgres" >> .env
 fi
 
