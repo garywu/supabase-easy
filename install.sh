@@ -36,11 +36,18 @@ mkdir -p volumes/db/data
 echo "Starting database..."
 docker-compose up -d db imgproxy
 
-# Step 4: Wait for database
+# Step 4: Wait for database and initialization
 echo "Waiting for database to be ready..."
 sleep 30
 until docker exec supabase-db pg_isready -U postgres; do
     echo "Waiting for database..."
+    sleep 5
+done
+
+# Wait for initial roles to be created
+echo "Waiting for database initialization..."
+until docker exec supabase-db psql -U postgres -c "SELECT 1 FROM pg_roles WHERE rolname='supabase_admin'" 2>/dev/null | grep -q "1 row"; do
+    echo "Waiting for roles to be created..."
     sleep 5
 done
 
