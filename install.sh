@@ -79,20 +79,16 @@ docker exec supabase-db psql -U postgres -c "GRANT supabase_storage_admin TO pos
 docker exec supabase-db psql -U postgres -c "CREATE DATABASE _supabase;" 2>/dev/null || true
 
 # Create schemas in main database
-docker exec supabase-db psql -U postgres << 'EOF'
-CREATE SCHEMA IF NOT EXISTS auth;
-CREATE SCHEMA IF NOT EXISTS _realtime;
-GRANT ALL ON SCHEMA auth TO supabase_auth_admin;
-GRANT ALL ON SCHEMA _realtime TO postgres;
-EOF
+docker exec supabase-db psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS auth;"
+docker exec supabase-db psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS _realtime;"
+docker exec supabase-db psql -U postgres -c "GRANT ALL ON SCHEMA auth TO supabase_auth_admin;"
+docker exec supabase-db psql -U postgres -c "GRANT ALL ON SCHEMA _realtime TO postgres;"
 
 # Create schemas in _supabase database
-docker exec supabase-db psql -U postgres -d _supabase << 'EOF'
-CREATE SCHEMA IF NOT EXISTS _analytics;
-CREATE SCHEMA IF NOT EXISTS _supavisor;
-GRANT ALL ON SCHEMA _analytics TO supabase_admin;
-GRANT ALL ON SCHEMA _supavisor TO supabase_admin;
-EOF
+docker exec supabase-db psql -U postgres -d _supabase -c "CREATE SCHEMA IF NOT EXISTS _analytics;"
+docker exec supabase-db psql -U postgres -d _supabase -c "CREATE SCHEMA IF NOT EXISTS _supavisor;"
+docker exec supabase-db psql -U postgres -d _supabase -c "GRANT ALL ON SCHEMA _analytics TO supabase_admin;"
+docker exec supabase-db psql -U postgres -d _supabase -c "GRANT ALL ON SCHEMA _supavisor TO supabase_admin;"
 
 # Step 6: Configure search paths
 echo "Configuring authentication..."
