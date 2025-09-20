@@ -1,0 +1,32 @@
+name: Test Installation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Make scripts executable
+      run: chmod +x scripts/*.sh
+    
+    - name: Test download script
+      run: make download
+    
+    - name: Verify cache
+      run: |
+        ls -la cache/
+        test -f cache/docker/docker-compose.yml
+        test -f cache/docker/.env.example
+    
+    - name: Check file count
+      run: |
+        FILE_COUNT=$(find cache -type f | wc -l)
+        echo "Downloaded $FILE_COUNT files"
+        test $FILE_COUNT -gt 10

@@ -1,0 +1,39 @@
+# Supabase Easy - Git Ignore
+
+# Downloaded cache files
+cache/
+
+# User projects
+projects/
+
+# OS Files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE Files
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env.local
+.env.*.local
+
+# Docker
+docker-compose.override.yml
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+.temp/
+
+# Test projects
+test-*/
