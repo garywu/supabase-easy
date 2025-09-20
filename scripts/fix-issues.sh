@@ -16,6 +16,11 @@ echo "🔧 Applying critical fixes..."
 
 # Fix 1: Create vector.yml as FILE not directory
 echo "  Fix 1: Vector configuration"
+# Remove any existing directory that Docker might have created
+if [ -d "volumes/logs/vector.yml" ]; then
+    echo "    Removing incorrectly created vector.yml directory..."
+    rm -rf volumes/logs/vector.yml
+fi
 mkdir -p volumes/logs
 cat > volumes/logs/vector.yml << 'EOF'
 api:
@@ -66,5 +71,39 @@ echo "  Fix 5: Directory structure"
 mkdir -p volumes/storage
 mkdir -p volumes/db/data
 mkdir -p volumes/functions
+
+# Fix 6: Remove vector dependency from db service to avoid startup issues
+echo "  Fix 6: Service dependencies"
+# Remove the vector dependency from db service
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # Use perl for more complex multi-line sed on macOS
+    perl -i -0pe 's/(db:\s+[^}]*?)depends_on:\s+vector:\s+condition:\s+service_healthy/$1/gs' docker-compose.yml
+else
+    # Use sed with pattern range on Linux
+    sed -i '/^  db:/,/^  [^ ]/{/depends_on:/,/condition: service_healthy/d}' docker-compose.yml
+fi
+
+# Fix 7: Ensure analytics can run migrations
+echo "  Fix 7: Analytics configuration"
+# Add RUN_MIGRATIONS environment variable for analytics
+if ! grep -q "RUN_MIGRATIONS:" docker-compose.yml; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' '/LOGFLARE_MIN_CLUSTER_SIZE:/a\
+      RUN_MIGRATIONS: true' docker-compose.yml
+    else
+        sed -i '/LOGFLARE_MIN_CLUSTER_SIZE:/a\      RUN_MIGRATIONS: true' docker-compose.yml
+    fi
+fi
+
+# Fix 8: Fix vector mount issue - use a different path
+echo "  Fix 8: Vector mount workaround"
+# Change vector mount to use config.yml instead of vector.yml to avoid docker directory issue
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' 's|./volumes/logs/vector.yml:/etc/vector/vector.yml:ro,z|./volumes/logs/config.yml:/etc/vector/vector.yml:ro,z|' docker-compose.yml
+else
+    sed -i 's|./volumes/logs/vector.yml:/etc/vector/vector.yml:ro,z|./volumes/logs/config.yml:/etc/vector/vector.yml:ro,z|' docker-compose.yml
+fi
+# Copy vector.yml to config.yml
+cp volumes/logs/vector.yml volumes/logs/config.yml
 
 echo "✅ All fixes applied"

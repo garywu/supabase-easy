@@ -16,6 +16,8 @@ Supabase's official self-hosting instructions are broken. After hours of debuggi
 - ❌ Missing POSTGRES_USER environment variable
 - ❌ Invalid Logflare tokens that don't work
 - ❌ Wrong service startup order causing cascading failures
+- ❌ Database user password mismatches
+- ❌ Missing analytics schema creation
 - ❌ Forces you to download 350MB when only 100KB is needed
 
 **This tool fixes ALL of these issues automatically.**
@@ -23,7 +25,7 @@ Supabase's official self-hosting instructions are broken. After hours of debuggi
 ## Features
 
 - ✅ **Downloads only what's needed** - 100KB instead of 350MB
-- ✅ **Fixes all 5 critical issues** automatically
+- ✅ **Fixes all 8 critical issues** automatically
 - ✅ **Cached downloads** - Download once, install multiple times
 - ✅ **Works first time** - No debugging required
 - ✅ **Comprehensive logging** - Know exactly what's happening
@@ -178,6 +180,9 @@ If analytics fails (which it often does), everything cascades into failure.
 | "Is a directory (os error 21)" | vector.yml created as directory |
 | "role 'postgres' does not exist" | POSTGRES_USER not set |
 | "LOGFLARE_PUBLIC_ACCESS_TOKEN is required" | Placeholder tokens |
+| "relation 'sources' does not exist" | Missing analytics schema |
+| "password authentication failed for user" | Database user password mismatches |
+| "dependency failed to start" | Service dependency issues |
 | Services won't start | Wrong startup order |
 
 ### 5. These Issues Have Been Reported for Years

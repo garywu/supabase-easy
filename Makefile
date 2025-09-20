@@ -41,14 +41,22 @@ install: download ## Install Supabase with all fixes applied
 	@cp $(CACHE_DIR)/docker/.env.example $(PROJECTS_DIR)/$(PROJECT)/.env
 	@echo "🔧 Applying fixes..."
 	@bash $(SCRIPTS_DIR)/fix-issues.sh $(PROJECTS_DIR)/$(PROJECT)
+	@echo "🔐 Preparing for Docker startup..."
+	@bash $(SCRIPTS_DIR)/pre-start.sh $(PROJECTS_DIR)/$(PROJECT)
 	@echo "🚀 Starting services..."
-	@cd $(PROJECTS_DIR)/$(PROJECT) && docker-compose up -d db vector imgproxy
+	@echo "  Starting database and imgproxy..."
+	@cd $(PROJECTS_DIR)/$(PROJECT) && docker-compose up -d db imgproxy
 	@echo "⏳ Waiting for database (30 seconds)..."
 	@sleep 30
+	@echo "  Creating _supabase database and schema..."
 	@cd $(PROJECTS_DIR)/$(PROJECT) && docker exec $$(docker-compose ps -q db) psql -U postgres -c "CREATE DATABASE _supabase;" 2>/dev/null || true
+	@cd $(PROJECTS_DIR)/$(PROJECT) && docker exec $$(docker-compose ps -q db) psql -U postgres -d _supabase -c "CREATE SCHEMA IF NOT EXISTS _analytics;" 2>/dev/null || true
+	@cd $(PROJECTS_DIR)/$(PROJECT) && docker exec $$(docker-compose ps -q db) psql -U postgres -d _supabase -c "GRANT ALL ON SCHEMA _analytics TO supabase_admin;" 2>/dev/null || true
+	@echo "  Starting analytics service..."
 	@cd $(PROJECTS_DIR)/$(PROJECT) && docker-compose up -d analytics
 	@echo "⏳ Waiting for analytics (20 seconds)..."
 	@sleep 20
+	@echo "  Starting all remaining services..."
 	@cd $(PROJECTS_DIR)/$(PROJECT) && docker-compose up -d
 	@echo "⏳ Waiting for all services (45 seconds)..."
 	@sleep 45
