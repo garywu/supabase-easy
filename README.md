@@ -86,6 +86,41 @@ This setup solves all common Supabase self-hosting issues:
 - Correct startup order with health checks
 - Proper dependency management between services
 
+## 🧪 Testing
+
+### Official Regression Test
+
+Validate zero-shot deployment with the official test suite:
+
+```bash
+# Run the complete regression test (full deployment)
+./tests/regression-test.sh
+
+# Run unit tests (fast component validation)
+./tests/unit-test.sh
+
+# Run without cleanup prompt (for CI/CD)
+./tests/regression-test.sh --no-cleanup
+
+# Get help
+./tests/regression-test.sh --help
+./tests/unit-test.sh --help
+```
+
+**What the test validates:**
+- ✅ Zero-shot deployment (no manual intervention)
+- ✅ All 13 services start successfully  
+- ✅ Key endpoints respond correctly
+- ✅ 100% success rate achievement
+
+**Expected result:**
+```
+🎯 SUCCESS RATE: 13/13 = 100%
+✅ REGRESSION TEST PASSED!
+```
+
+See [`tests/README.md`](tests/README.md) for detailed testing documentation.
+
 ## 📝 Management Commands
 
 ```bash
