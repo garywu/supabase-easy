@@ -44,21 +44,77 @@ until docker exec supabase-db pg_isready -U postgres; do
     sleep 5
 done
 
-# Wait for initial roles to be created
+# Give database time to fully initialize
 echo "Waiting for database initialization..."
-until docker exec supabase-db psql -U postgres -c "SELECT 1 FROM pg_roles WHERE rolname='supabase_admin'" 2>/dev/null | grep -q "1 row"; do
-    echo "Waiting for roles to be created..."
-    sleep 5
-done
+sleep 10
 
 # Step 5: Create required databases and schemas
 echo "Setting up databases and schemas..."
+
+# First, create the required roles that should exist but don't
+echo "Creating required roles..."
+docker exec supabase-db psql -U postgres << 'EOF'
+-- Create roles if they don't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_admin') THEN
+    CREATE ROLE supabase_admin LOGIN SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticator') THEN
+    CREATE ROLE authenticator LOGIN NOINHERIT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_auth_admin') THEN
+    CREATE ROLE supabase_auth_admin LOGIN CREATEROLE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_storage_admin') THEN
+    CREATE ROLE supabase_storage_admin LOGIN;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_functions_admin') THEN
+    CREATE ROLE supabase_functions_admin LOGIN;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'dashboard_user') THEN
+    CREATE ROLE dashboard_user LOGIN;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'pgbouncer') THEN
+    CREATE ROLE pgbouncer LOGIN;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    CREATE ROLE anon NOLOGIN;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+    CREATE ROLE service_role NOLOGIN;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+    CREATE ROLE authenticated NOLOGIN;
+  END IF;
+END
+$$;
+
+-- Grant necessary permissions
+GRANT anon TO authenticator;
+GRANT service_role TO authenticator;
+GRANT authenticated TO authenticator;
+GRANT dashboard_user TO postgres;
+EOF
+
+# Now create databases and schemas
 docker exec supabase-db psql -U postgres -c "CREATE DATABASE _supabase;" 2>/dev/null || true
-docker exec supabase-db psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS _analytics; GRANT ALL ON SCHEMA _analytics TO supabase_admin;"
-docker exec supabase-db psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS auth; GRANT ALL ON SCHEMA auth TO supabase_auth_admin;"
-docker exec supabase-db psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS _realtime; GRANT ALL ON SCHEMA _realtime TO postgres;"
-docker exec supabase-db psql -U postgres -d _supabase -c "CREATE SCHEMA IF NOT EXISTS _analytics; GRANT ALL ON SCHEMA _analytics TO supabase_admin;"
-docker exec supabase-db psql -U postgres -d _supabase -c "CREATE SCHEMA IF NOT EXISTS _supavisor; GRANT ALL ON SCHEMA _supavisor TO supabase_admin;"
+
+# Create schemas in main database
+docker exec supabase-db psql -U postgres << 'EOF'
+CREATE SCHEMA IF NOT EXISTS auth;
+CREATE SCHEMA IF NOT EXISTS _realtime;
+GRANT ALL ON SCHEMA auth TO supabase_auth_admin;
+GRANT ALL ON SCHEMA _realtime TO postgres;
+EOF
+
+# Create schemas in _supabase database
+docker exec supabase-db psql -U postgres -d _supabase << 'EOF'
+CREATE SCHEMA IF NOT EXISTS _analytics;
+CREATE SCHEMA IF NOT EXISTS _supavisor;
+GRANT ALL ON SCHEMA _analytics TO supabase_admin;
+GRANT ALL ON SCHEMA _supavisor TO supabase_admin;
+EOF
 
 # Step 6: Fix user passwords
 echo "Configuring authentication..."
