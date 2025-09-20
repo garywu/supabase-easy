@@ -74,6 +74,9 @@ docker exec supabase-db psql -U postgres -c "GRANT authenticated TO authenticato
 docker exec supabase-db psql -U postgres -c "GRANT dashboard_user TO postgres;"
 docker exec supabase-db psql -U postgres -c "GRANT supabase_auth_admin TO postgres;"
 docker exec supabase-db psql -U postgres -c "GRANT supabase_storage_admin TO postgres;"
+docker exec supabase-db psql -U postgres -c "GRANT supabase_admin TO postgres;"
+docker exec supabase-db psql -U postgres -c "GRANT supabase_functions_admin TO postgres;"
+docker exec supabase-db psql -U postgres -c "GRANT CREATE ON DATABASE postgres TO supabase_storage_admin;"
 
 # Now create databases and schemas
 docker exec supabase-db psql -U postgres -c "CREATE DATABASE _supabase;" 2>/dev/null || true
@@ -113,6 +116,14 @@ docker-compose up -d
 # Step 10: Final wait
 echo "Waiting for all services to initialize..."
 sleep 30
+
+# Step 11: Fix storage permissions manually (if needed)
+echo "Ensuring storage database permissions..."
+docker exec supabase-db psql -U postgres -c "GRANT ALL ON DATABASE postgres TO supabase_storage_admin;" 2>/dev/null || true
+docker exec supabase-db psql -U postgres -c "ALTER USER supabase_storage_admin CREATEDB;" 2>/dev/null || true
+
+# Wait a moment before final check
+sleep 10
 
 # Step 11: Verify installation
 echo ""
