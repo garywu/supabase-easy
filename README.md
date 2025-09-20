@@ -159,5 +159,7 @@ Built on top of the official Supabase Docker setup with comprehensive fixes for 
 ---
 
 **Status**: ✅ Production Ready  
-**Success Rate**: 100% (13/13 services)  
+**Success Rate**: 92% (12/13 services)*  
 **Installation Time**: ~5 minutes
+
+*Note: The pooler/supavisor service may fail to start due to vault encryption configuration. This is optional for basic functionality - connection pooling can be handled directly through the database.
