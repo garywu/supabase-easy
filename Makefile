@@ -5,7 +5,7 @@
 
 # Configuration
 PROJECT ?= supabase-local
-PORT ?= 8000
+PORT ?= 9247
 CACHE_DIR := cache
 PROJECTS_DIR := projects
 SCRIPTS_DIR := scripts
@@ -26,12 +26,12 @@ help: ## Show this help message
 	@echo ""
 	@echo "Variables:"
 	@echo "  ${YELLOW}PROJECT${NC}   Project name (default: supabase-local)"
-	@echo "  ${YELLOW}PORT${NC}      API port (default: 8000)"
+	@echo "  ${YELLOW}PORT${NC}      API port (default: 9247)"
 	@echo ""
 	@echo "Examples:"
 	@echo "  make install                    # Basic installation"
 	@echo "  make install PROJECT=myapp      # Custom project name"
-	@echo "  make install PORT=8001          # Different port"
+	@echo "  make install PORT=9001          # Different port"
 
 install: download ## Install Supabase with all fixes applied
 	@echo "${GREEN}🚀 Installing Supabase Easy - Project: $(PROJECT)${NC}"

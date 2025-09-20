@@ -46,7 +46,7 @@ make install
 make install PROJECT=my-app
 ```
 
-That's it! Supabase will be running at http://localhost:8000
+That's it! Supabase will be running at http://localhost:9247
 
 **Default Credentials:**
 - Username: `supabase`
@@ -192,14 +192,14 @@ We found GitHub issues and discussions dating back to 2022 with these exact prob
 
 ## Troubleshooting
 
-### Port 8000 Already in Use
+### Port 9247 Already in Use
 
 ```bash
-# Check what's using port 8000
-lsof -i :8000
+# Check what's using port 9247
+lsof -i :9247
 
 # Use different port
-make install PORT=8001
+make install PORT=9001
 ```
 
 ### Analytics Still Failing
