@@ -55,30 +55,30 @@ echo "Setting up databases and schemas..."
 echo "Creating required roles..."
 POSTGRES_PASSWORD=$(grep POSTGRES_PASSWORD .env | cut -d '=' -f2)
 
-docker exec supabase-db psql -U postgres << EOF
+docker exec supabase-db psql -U postgres <<EOF
 -- Create roles if they don't exist
 DO \$\$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_admin') THEN
-    CREATE ROLE supabase_admin LOGIN SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS PASSWORD '$POSTGRES_PASSWORD';
+    CREATE ROLE supabase_admin LOGIN SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS PASSWORD '${POSTGRES_PASSWORD}';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticator') THEN
-    CREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '$POSTGRES_PASSWORD';
+    CREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '${POSTGRES_PASSWORD}';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_auth_admin') THEN
-    CREATE ROLE supabase_auth_admin LOGIN CREATEROLE PASSWORD '$POSTGRES_PASSWORD';
+    CREATE ROLE supabase_auth_admin LOGIN CREATEROLE PASSWORD '${POSTGRES_PASSWORD}';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_storage_admin') THEN
-    CREATE ROLE supabase_storage_admin LOGIN PASSWORD '$POSTGRES_PASSWORD';
+    CREATE ROLE supabase_storage_admin LOGIN PASSWORD '${POSTGRES_PASSWORD}';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_functions_admin') THEN
-    CREATE ROLE supabase_functions_admin LOGIN PASSWORD '$POSTGRES_PASSWORD';
+    CREATE ROLE supabase_functions_admin LOGIN PASSWORD '${POSTGRES_PASSWORD}';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'dashboard_user') THEN
-    CREATE ROLE dashboard_user LOGIN PASSWORD '$POSTGRES_PASSWORD';
+    CREATE ROLE dashboard_user LOGIN PASSWORD '${POSTGRES_PASSWORD}';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'pgbouncer') THEN
-    CREATE ROLE pgbouncer LOGIN PASSWORD '$POSTGRES_PASSWORD';
+    CREATE ROLE pgbouncer LOGIN PASSWORD '${POSTGRES_PASSWORD}';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
     CREATE ROLE anon NOLOGIN;
@@ -123,9 +123,9 @@ EOF
 # Step 6: Fix user passwords  
 echo "Configuring authentication..."
 # Password already read above in Step 5
-docker exec supabase-db psql -U postgres -c "ALTER USER authenticator WITH PASSWORD '$POSTGRES_PASSWORD';"
-docker exec supabase-db psql -U postgres -c "ALTER USER supabase_auth_admin WITH PASSWORD '$POSTGRES_PASSWORD';"
-docker exec supabase-db psql -U postgres -c "ALTER USER supabase_storage_admin WITH PASSWORD '$POSTGRES_PASSWORD';"
+docker exec supabase-db psql -U postgres -c "ALTER USER authenticator WITH PASSWORD '${POSTGRES_PASSWORD}';"
+docker exec supabase-db psql -U postgres -c "ALTER USER supabase_auth_admin WITH PASSWORD '${POSTGRES_PASSWORD}';"
+docker exec supabase-db psql -U postgres -c "ALTER USER supabase_storage_admin WITH PASSWORD '${POSTGRES_PASSWORD}';"
 docker exec supabase-db psql -U postgres -c "ALTER USER supabase_auth_admin SET search_path = auth, public;"
 
 # Step 7: Start analytics
