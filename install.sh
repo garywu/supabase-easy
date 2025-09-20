@@ -10,16 +10,20 @@ if [ ! -f .env ]; then
     # Generate real tokens
     LOGFLARE_PUBLIC=$(openssl rand -hex 32)
     LOGFLARE_PRIVATE=$(openssl rand -hex 32)
+    # Generate a proper 32-byte vault key
+    VAULT_KEY=$(openssl rand -base64 32)
     
     # Update tokens based on OS
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS
         sed -i '' "s/your-super-secret-and-long-logflare-key-public/$LOGFLARE_PUBLIC/g" .env
         sed -i '' "s/your-super-secret-and-long-logflare-key-private/$LOGFLARE_PRIVATE/g" .env
+        sed -i '' "s|2iKTLhfCvF5yb8MrIrnJvwQxnBR6PvJGE05OU5yJQKI=|$VAULT_KEY|g" .env
     else
         # Linux
         sed -i "s/your-super-secret-and-long-logflare-key-public/$LOGFLARE_PUBLIC/g" .env
         sed -i "s/your-super-secret-and-long-logflare-key-private/$LOGFLARE_PRIVATE/g" .env
+        sed -i "s|2iKTLhfCvF5yb8MrIrnJvwQxnBR6PvJGE05OU5yJQKI=|$VAULT_KEY|g" .env
     fi
     
     # Add missing POSTGRES_USER
