@@ -18,6 +18,7 @@ Supabase's official self-hosting instructions are broken. After hours of debuggi
 - ❌ Wrong service startup order causing cascading failures
 - ❌ Database user password mismatches
 - ❌ Missing analytics schema creation
+- ❌ Missing realtime and pooler schemas
 - ❌ Forces you to download 350MB when only 100KB is needed
 
 **This tool fixes ALL of these issues automatically.**
@@ -25,7 +26,7 @@ Supabase's official self-hosting instructions are broken. After hours of debuggi
 ## Features
 
 - ✅ **Downloads only what's needed** - 100KB instead of 350MB
-- ✅ **Fixes all 8 critical issues** automatically
+- ✅ **Fixes all 10 critical issues** automatically
 - ✅ **Cached downloads** - Download once, install multiple times
 - ✅ **Works first time** - No debugging required
 - ✅ **Comprehensive logging** - Know exactly what's happening

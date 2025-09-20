@@ -70,6 +70,7 @@ chmod +x volumes/db/*.sql 2>/dev/null || true
 echo "  Fix 5: Directory structure"
 mkdir -p volumes/storage
 mkdir -p volumes/db/data
+mkdir -p volumes/db/init
 mkdir -p volumes/functions
 
 # Fix 6: Remove vector dependency from db service to avoid startup issues
@@ -105,5 +106,26 @@ else
 fi
 # Copy vector.yml to config.yml
 cp volumes/logs/vector.yml volumes/logs/config.yml
+
+# Fix 9: Create additional required schemas
+echo "  Fix 9: Additional database schemas"
+# Create realtime schema for realtime service
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo 'CREATE SCHEMA IF NOT EXISTS realtime; GRANT ALL ON SCHEMA realtime TO postgres;' >> volumes/db/init/20-schemas.sql
+    echo 'CREATE SCHEMA IF NOT EXISTS _supavisor; GRANT ALL ON SCHEMA _supavisor TO postgres;' >> volumes/db/init/20-schemas.sql
+else
+    echo 'CREATE SCHEMA IF NOT EXISTS realtime; GRANT ALL ON SCHEMA realtime TO postgres;' >> volumes/db/init/20-schemas.sql
+    echo 'CREATE SCHEMA IF NOT EXISTS _supavisor; GRANT ALL ON SCHEMA _supavisor TO postgres;' >> volumes/db/init/20-schemas.sql
+fi
+
+# Fix 10: Update user passwords to match environment
+echo "  Fix 10: Database user password sync"
+cat > volumes/db/init/21-passwords.sql << 'EOF'
+-- Ensure all service users have correct passwords
+ALTER USER authenticator WITH PASSWORD 'your-super-secret-and-long-postgres-password';
+ALTER USER supabase_auth_admin WITH PASSWORD 'your-super-secret-and-long-postgres-password';
+ALTER USER supabase_storage_admin WITH PASSWORD 'your-super-secret-and-long-postgres-password';
+ALTER USER supabase_auth_admin SET search_path = auth, public;
+EOF
 
 echo "✅ All fixes applied"
