@@ -49,13 +49,84 @@ services:
       - |
         cat > /target/kong.yml << 'EOF'
         _format_version: "2.1"
+        _transform: true
+        
         services:
-        - name: rest
-          url: http://rest:3000
-          routes:
+          - name: studio
+            url: http://studio:3000
+            routes:
+              - name: studio-home
+                strip_path: false
+                paths:
+                  - /
+              - name: studio-all
+                strip_path: false
+                paths:
+                  - /project/
+                  - /_next/
+                  - /api/
+            plugins:
+              - name: cors
+        
+          - name: auth
+            url: http://auth:9999
+            routes:
+              - name: auth-all
+                strip_path: true
+                paths:
+                  - /auth/
+            plugins:
+              - name: cors
+              
           - name: rest
-            paths:
-            - "/"
+            url: http://rest:3000
+            routes:
+              - name: rest-all
+                strip_path: true
+                paths:
+                  - /rest/
+            plugins:
+              - name: cors
+              
+          - name: realtime
+            url: http://realtime:4000
+            routes:
+              - name: realtime-all
+                strip_path: false
+                paths:
+                  - /realtime/
+            plugins:
+              - name: cors
+              
+          - name: storage
+            url: http://storage:5000
+            routes:
+              - name: storage-all
+                strip_path: true
+                paths:
+                  - /storage/
+            plugins:
+              - name: cors
+              
+          - name: meta
+            url: http://meta:8080
+            routes:
+              - name: meta-all
+                strip_path: true
+                paths:
+                  - /pg/
+            plugins:
+              - name: cors
+        
+          - name: functions
+            url: http://functions:3000
+            routes:
+              - name: functions-all
+                strip_path: true
+                paths:
+                  - /functions/
+            plugins:
+              - name: cors
         EOF
         echo 'Kong config file created'
 
@@ -325,7 +396,7 @@ services:
     image: supabase/logflare:1.14.2
     restart: unless-stopped
     ports:
-      - 4000:4000
+      - 54323:4000
     healthcheck:
       test: ["CMD", "curl", "http://localhost:4000/health"]
       timeout: 5s
@@ -357,6 +428,7 @@ services:
     image: supabase/postgres:15.8.1.060
     restart: unless-stopped
     volumes:
+      - ./volumes/db/00-extensions.sql:/docker-entrypoint-initdb.d/init-scripts/00-extensions.sql:Z
       - ./volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
       - ./volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z
       - ./volumes/db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z
